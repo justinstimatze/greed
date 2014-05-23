@@ -1,20 +1,18 @@
-// This code runs once per frame. Build units and command peons!
-// Destroy the human base within 180 seconds.
-// Run over 4000 statements per call and chooseAction will run less often.
-// Check out the green Guide button at the top for more info.
+// Init
 
 var base = this;
 var debug = true;
 var logger = '';
-
 function log(event) {
     logger += event + '; ';
 }
 
-/////// 1. Command peons to grab coins and gems. ///////
-// You can only command peons, not fighting units.
-// You win by gathering gold more efficiently to make a larger army.
-// Click on a unit to see its API.
+if (typeof this.peonsBuilt === 'undefined') {
+    this.peonsBuilt = 0;
+}
+
+
+// Command
 var items = base.getItems();
 var peons = base.getByType('peon');
 debug ? log('Num peons is ' + peons.length) : null;
@@ -37,12 +35,7 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
 }
 
 
-/////// 2. Decide which unit to build this frame. ///////
-// Peons can gather gold; other units auto-attack the enemy base.
-// You can only build one unit per frame, if you have enough gold.
-if (typeof this.peonsBuilt === 'undefined') {
-    this.peonsBuilt = 0;
-}
+// Build
 var type;
 if (this.peonsBuilt < 2) {
     type = 'peon';
@@ -60,11 +53,3 @@ if (this.gold >= this.buildables[type].goldCost) {
 debug ? log("Peons built: " + this.peonsBuilt) : null;
 
 this.say(logger);
-
-// 'peon': Peons gather gold and do not fight.
-// 'munchkin': Light melee unit.
-// 'ogre': Heavy melee unit.
-// 'shaman': Support spellcaster.
-// 'fangrider': High damage ranged attacker.
-// 'brawler': Mythically expensive super melee unit.
-// See the buildables documentation below for costs and the guide for more info.
