@@ -8,6 +8,7 @@ function log(event) {
 }
 
 var FRAMES_PER_SECOND = 4.0;
+var MAX_P = 5;
 
 var P = 'peon';
 var M = 'munchkin';
@@ -71,7 +72,7 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
 
 // Build
 var type;
-if (this.peonsBuilt <= peasants.length) {
+if (this.peonsBuilt <= peasants.length && this.peonsBuilt <= MAX_P) {
     type = P;
 } else {
     type = O;
