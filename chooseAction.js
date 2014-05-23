@@ -11,9 +11,21 @@ var base = this;
 // Click on a unit to see its API.
 var items = base.getItems();
 var peons = base.getByType('peon');
+var distanceWeight = 1;
 for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     var peon = peons[peonIndex];
-    var item = peon.getNearest(items);
+    var item = peon.getNearest(items); // Without regard to value.
+    var bestScore = -1;
+    for(var i = 0; i < items.length; ++i) {
+        var possibleItem = items[i];
+        var distance = peon.distance(possibleItem);
+        var score = possibleItem.bountyGold / (distance*distanceWeight);
+        if (score > bestScore) {
+            item = possibleItem;
+            bestScore = score;
+        }
+    }
+    this.say("Turn score: " + bestScore);
     if (item)
         base.command(peon, 'move', item.pos);
 }
