@@ -24,14 +24,6 @@ var F = 'fangrider';
 var B = 'brawler';
 var E = 'peasant';
 
-function realDistance(a, b) {
-    var distance = a.distance(b);
-    if (distance > GRAB_DISTANCE) {
-        //distance -= GRAB_DISTANCE;
-    }
-    return distance;
-}
-
 // Persistent values.
 if (typeof this.peonsBuilt === 'undefined') {
     this.peonsBuilt = 0;
@@ -56,7 +48,7 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     
     var peasant = peon.getNearest(peasants);
     var stealTarget = peasant.targetPos;
-    if (realDistance(peon.pos, stealTarget) <= realDistance(peasant.pos, stealTarget)) {
+    if (peon.distanceSquared(stealTarget) <= peasant.distanceSquared(stealTarget)) {
         // Attept to deny their grab.
         pos = stealTarget;
         debug ? log(peon.id[0] + "=S") : null;
@@ -64,11 +56,11 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
         var bestScore = -1;
         for(var i = 0; i < items.length; ++i) {
             var possibleItem = items[i];
-            var distance = realDistance(peon.pos, possibleItem.pos);
+            var distance = peon.distance(possibleItem);
             var score = possibleItem.bountyGold / (distance*distanceWeight);
             if (score > bestScore) {
                 // Assume E is just as smart and will get it before we do if closer.
-                if (realDistance(peon.pos, possibleItem.pos) <= realDistance(peasant.pos, possibleItem.pos)) {
+                if (peon.distanceSquared(possibleItem) <= peasant.distanceSquared(possibleItem)) {
                     item = possibleItem;
                     bestScore = score;
                 }
