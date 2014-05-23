@@ -29,7 +29,8 @@ debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
 // Command
 var items = base.getItems();
 var peons = base.getByType(P);
-debug ? log('Num peons is ' + peons.length) : null;
+var peasants = base.getByType('peasant');
+debug ? log('Num peasants is ' + peasants.length) : null;
 var distanceWeight = 1;
 for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     var peon = peons[peonIndex];
