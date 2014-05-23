@@ -59,6 +59,7 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     if (realDistance(peon.pos, stealTarget) <= realDistance(peasant.pos, stealTarget)) {
         // Attept to deny their grab.
         pos = stealTarget;
+        debug ? log(peon.id[0] + "=S") : null;
     } else {
         var bestScore = -1;
         for(var i = 0; i < items.length; ++i) {
@@ -75,10 +76,12 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
         }
         if (item) {
             pos = item.pos;
+            debug ? log(peon.id[0] + "=W") : null;
         } else {
             // No item passed the bestScore criteria.
             item = peon.getNearest(items); // Without regard to value.  
             pos = item.pos;
+            debug ?  log(peon.id[0] + "=N") : null;
         }
     }
     
