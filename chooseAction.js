@@ -77,11 +77,10 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     }
     
     if (pos) {
-        
         var step = Vector.subtract(pos, peon.pos);
         
         // Protect my targetPos from multi turn spying.
-        // Additinally, doesn't take a longer step than necessary to grab.
+        // Also, take the smallest step possible (grab distance is 4.8ish)
         step = Vector.limit(step, MAX_DISTANCE_PER_FRAME);
         
         pos = Vector.add(peon.pos, step);
