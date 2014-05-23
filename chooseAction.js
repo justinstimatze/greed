@@ -13,7 +13,7 @@ var items = base.getItems();
 var peons = base.getByType('peon');
 for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     var peon = peons[peonIndex];
-    var item = base.getNearest(items);
+    var item = peon.getNearest(items);
     if (item)
         base.command(peon, 'move', item.pos);
 }
