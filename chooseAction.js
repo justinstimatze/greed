@@ -53,7 +53,7 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
 
 // Build
 var type;
-if (this.peonsBuilt < 2) {
+if (this.peonsBuilt <= peasants.length) {
     type = P;
 } else {
     type = O;
