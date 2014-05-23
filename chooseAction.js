@@ -45,6 +45,7 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     var peasant = peon.getNearest(peasants);
     var stealTarget = peasant.targetPos;
     if (peon.distanceSquared(stealTarget) <= peasant.distanceSquared(stealTarget)) {
+        // Attept to deny their target.
         pos = stealTarget;
     } else {
         var bestScore = -1;
@@ -53,8 +54,11 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
             var distance = peon.distance(possibleItem);
             var score = possibleItem.bountyGold / (distance*distanceWeight);
             if (score > bestScore) {
-                item = possibleItem;
-                bestScore = score;
+                // Assume E is just as smart and will get it before we do if closer.
+                if (peon.distanceSquared(possibleItem) <= peasant.distanceSquared(possibleItem)) {
+                    item = possibleItem;
+                    bestScore = score;
+                }
             }
         }
         if (item) {
