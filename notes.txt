@@ -8,3 +8,9 @@ shields targetPos from long term spying
 
 coarse grained binning of regions on grid, heatmap.
 blob detection? or will just avoiding self handle this?
+
+cap peons to some value
+
+munchkin swarm is effective
+
+how to defend against following? only go for item further for the closest enemy?
