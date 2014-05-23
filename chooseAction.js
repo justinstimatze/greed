@@ -38,10 +38,12 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     var peon = peons[peonIndex];
     var item;
     var pos;
-    if (mode === 'closest') {
-        item = peon.getNearest(items); // Without regard to value.
-        pos = item.pos;
-    } else if (mode === 'weighted') {
+    
+    var peasant = peon.getNearest(peasants);
+    var stealTarget = peasant.targetPos;
+    if (peon.distanceSquared(stealTarget) <= peasant.distanceSquared(stealTarget)) {
+        pos = stealTarget;
+    } else {
         var bestScore = -1;
         for(var i = 0; i < items.length; ++i) {
             var possibleItem = items[i];
@@ -54,11 +56,13 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
         }
         if (item) {
             pos = item.pos;
+        } else {
+            // No item passed the bestScore criteria.
+            item = peon.getNearest(items); // Without regard to value.  
+            pos = item.pos;
         }
-    } else if (mode === 'thief') {
-        pos = peon.getNearest(peasants).targetPos;
     }
- 
+    
     if (pos) {
         base.command(peon, 'move', pos);
     }
