@@ -8,6 +8,8 @@ function log(event) {
 }
 
 var FRAMES_PER_SECOND = 4.0;
+var SPEED = 10.0; // As provided.
+var MAX_DISTANCE_PER_FRAME = SPEED / FRAMES_PER_SECOND;
 var MAX_P = 5;
 
 var P = 'peon';
@@ -65,7 +67,9 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     }
     
     if (pos) {
-        base.command(peon, 'move', pos);
+        // Protect my targetPos from long term spying.
+        var minStep = Vector.limit(Vector.subtract(pos, peon.pos), MAX_DISTANCE_PER_FRAME);
+        base.command(peon, 'move', Vector.add(peon.pos, minStep));
     }
 }
 
