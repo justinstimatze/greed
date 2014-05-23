@@ -4,6 +4,12 @@
 // Check out the green Guide button at the top for more info.
 
 var base = this;
+var debug = true;
+var logger = '';
+
+function log(event) {
+    logger += event + '; ';
+}
 
 /////// 1. Command peons to grab coins and gems. ///////
 // You can only command peons, not fighting units.
@@ -11,6 +17,7 @@ var base = this;
 // Click on a unit to see its API.
 var items = base.getItems();
 var peons = base.getByType('peon');
+debug ? log('Num peons is ' + peons.length) : null;
 var distanceWeight = 1;
 for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     var peon = peons[peonIndex];
@@ -50,7 +57,9 @@ if (this.gold >= this.buildables[type].goldCost) {
     }
 }
 
-this.say("Peons built: " + this.peonsBuilt);
+debug ? log("Peons built: " + this.peonsBuilt) : null;
+
+this.say(logger);
 
 // 'peon': Peons gather gold and do not fight.
 // 'munchkin': Light melee unit.
