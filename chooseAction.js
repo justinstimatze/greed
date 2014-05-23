@@ -38,7 +38,7 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     var peon = peons[peonIndex];
     var item;
     if (mode === 'closest') {
-        item = peon.getNearest(peasents); // Without regard to value.
+        item = peon.getNearest(items); // Without regard to value.
     } else if (mode === 'weighted') {
         var bestScore = -1;
         for(var i = 0; i < items.length; ++i) {
@@ -50,7 +50,7 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
                 bestScore = score;
             }
         }
-    } 
+    }
  
     if (item)
         base.command(peon, 'move', item.pos);
