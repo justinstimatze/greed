@@ -13,7 +13,6 @@ function logVec(vec, name) {
 var FRAMES_PER_SECOND = 4.0;
 var SPEED = 10.0; // As provided.
 var MAX_DISTANCE_PER_FRAME = SPEED / FRAMES_PER_SECOND;
-var GRAB_DISTANCE = 4.8; // Emperical, from trial and error.
 var MAX_P = 5;
 
 var P = 'peon';
@@ -80,15 +79,10 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     if (pos) {
         
         var step = Vector.subtract(pos, peon.pos);
-
-        // Don't have to get there exacctly
-        var stepMagnitude = step.magnitude();
-        if (stepMagnitude > GRAB_DISTANCE) {
-            step = Vector.limit(step, (stepMagnitude - GRAB_DISTANCE));
-        }
         
-        // Protect my targetPos from long term spying.
-        //var minStep = Vector.limit(, MAX_DISTANCE_PER_FRAME);
+        // Protect my targetPos from multi turn spying.
+        // Additinally, doesn't take a longer step than necessary to grab.
+        step = Vector.limit(step, MAX_DISTANCE_PER_FRAME);
         
         pos = Vector.add(peon.pos, step);
         base.command(peon, 'move', pos);
