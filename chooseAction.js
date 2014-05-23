@@ -15,6 +15,7 @@ var O = 'ogre';
 var S = 'shaman';
 var F = 'fangrider';
 var B = 'brawler';
+var E = 'peasant';
 
 // Persistent values.
 if (typeof this.peonsBuilt === 'undefined') {
@@ -29,7 +30,7 @@ debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
 // Command
 var items = base.getItems();
 var peons = base.getByType(P);
-var peasants = base.getByType('peasant');
+var peasants = base.getByType(E);
 debug ? log('Num peasants is ' + peasants.length) : null;
 var distanceWeight = 1;
 for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
