@@ -33,12 +33,14 @@ var peons = base.getByType(P);
 var peasants = base.getByType(E);
 debug ? log('Num peasants is ' + peasants.length) : null;
 var distanceWeight = 1;
-var mode = 'weighted';
+var mode = 'thief';
 for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     var peon = peons[peonIndex];
     var item;
+    var pos;
     if (mode === 'closest') {
         item = peon.getNearest(items); // Without regard to value.
+        pos = item.pos;
     } else if (mode === 'weighted') {
         var bestScore = -1;
         for(var i = 0; i < items.length; ++i) {
@@ -50,10 +52,16 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
                 bestScore = score;
             }
         }
+        if (item) {
+            pos = item.pos;
+        }
+    } else if (mode === 'thief') {
+        pos = peon.getNearest(peasants).targetPos;
     }
  
-    if (item)
-        base.command(peon, 'move', item.pos);
+    if (pos) {
+        base.command(peon, 'move', pos);
+    }
 }
 
 
