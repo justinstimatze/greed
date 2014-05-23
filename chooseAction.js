@@ -6,7 +6,15 @@ var logger = '';
 function log(event) {
     logger += event + '; ';
 }
+
 var FRAMES_PER_SECOND = 4.0;
+
+var P = 'peon';
+var M = 'munchkin';
+var O = 'ogre';
+var S = 'shaman';
+var F = 'fangrider';
+var B = 'brawler';
 
 // Persistent values.
 if (typeof this.peonsBuilt === 'undefined') {
@@ -20,7 +28,7 @@ debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
 
 // Command
 var items = base.getItems();
-var peons = base.getByType('peon');
+var peons = base.getByType(P);
 debug ? log('Num peons is ' + peons.length) : null;
 var distanceWeight = 1;
 for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
@@ -44,14 +52,14 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
 // Build
 var type;
 if (this.peonsBuilt < 2) {
-    type = 'peon';
+    type = P;
 } else {
-    type = 'ogre';
+    type = O;
 } 
 
 if (this.gold >= this.buildables[type].goldCost) {
     this.build(type);
-    if (type === 'peon') {
+    if (type === P) {
         ++this.peonsBuilt;
     }
 }
