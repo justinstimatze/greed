@@ -6,11 +6,17 @@ var logger = '';
 function log(event) {
     logger += event + '; ';
 }
+var FRAMES_PER_SECOND = 4.0;
 
+// Persistent values.
 if (typeof this.peonsBuilt === 'undefined') {
     this.peonsBuilt = 0;
 }
+if (typeof this.frames === 'undefined') {
+    this.frames = 0;
+}
 
+debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
 
 // Command
 var items = base.getItems();
@@ -53,3 +59,4 @@ if (this.gold >= this.buildables[type].goldCost) {
 debug ? log("Peons built: " + this.peonsBuilt) : null;
 
 this.say(logger);
+++this.frames;
