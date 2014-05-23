@@ -25,7 +25,6 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
             bestScore = score;
         }
     }
-    this.say("Turn score: " + bestScore);
     if (item)
         base.command(peon, 'move', item.pos);
 }
@@ -34,15 +33,24 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
 /////// 2. Decide which unit to build this frame. ///////
 // Peons can gather gold; other units auto-attack the enemy base.
 // You can only build one unit per frame, if you have enough gold.
+if (typeof this.peonsBuilt === 'undefined') {
+    this.peonsBuilt = 0;
+}
 var type;
-var peonEvery = 99;
-if (base.built.length === 0 || base.built.length % peonEvery === 0)
+if (this.peonsBuilt < 2) {
     type = 'peon';
-else
+} else {
     type = 'ogre';
-if (base.gold >= base.buildables[type].goldCost)
-    base.build(type);
+} 
 
+if (this.gold >= this.buildables[type].goldCost) {
+    this.build(type);
+    if (type === 'peon') {
+        ++this.peonsBuilt;
+    }
+}
+
+this.say("Peons built: " + this.peonsBuilt);
 
 // 'peon': Peons gather gold and do not fight.
 // 'munchkin': Light melee unit.
