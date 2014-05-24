@@ -16,6 +16,7 @@ var MAX_DISTANCE_PER_FRAME = SPEED / FRAMES_PER_SECOND;
 var MAX_P = 5;
 
 var DISTANCE_WEIGHT = 1;
+var PI2 = Math.PI / 2.0;
 
 // Shorthand variables
 var TYPES = ['peon', 'munchkin', 'ogre', 'shaman', 'fangrider', 'brawler', 'peasant'];
@@ -45,6 +46,12 @@ if (typeof this.queuedCount === 'undefined') {
     this.queuedCount = [0, 0, 0, 0, 0, 0]; // not including enemies
 }
 
+// 4 ranges, with index 0 being [0, Pi/2], usual positive direction.
+function binHeading(vec) {
+    var heading = vec.heading();
+    return Math.floor(heading / PI2);
+}
+
 debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
 
 // Command
@@ -68,6 +75,7 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
         pos = stealTarget;
         debug ? log(peon.id[0] + "=S") : null;
     } else {
+        
         var bestScore = -1;
         for(var i = 0; i < items.length; ++i) {
             var possibleItem = items[i];
