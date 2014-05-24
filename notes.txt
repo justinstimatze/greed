@@ -7,3 +7,11 @@ blob detection? or will just avoiding self handle this?
 munchkin swarm is effective
 
 Coins spawn between (0, 0) and (85, 70), from guide
+
+// Cantor's pairing function
+// Associate (x,y) with single unique positive integer
+function pair(pos) {
+    var x = pos.x;
+    var y = pos.y;
+    return ((x*x + 3*x + 2*x*y + y + y*y) / 2);
+}
