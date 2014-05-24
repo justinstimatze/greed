@@ -15,6 +15,8 @@ var SPEED = 10.0; // As provided.
 var MAX_DISTANCE_PER_FRAME = SPEED / FRAMES_PER_SECOND;
 var MAX_P = 5;
 
+var DISTANCE_WEIGHT = 1;
+
 // Shorthand variables
 var TYPES = ['peon', 'munchkin', 'ogre', 'shaman', 'fangrider', 'brawler', 'peasant'];
 var P = 'peon';
@@ -49,9 +51,6 @@ debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
 var items = base.getItems();
 var peons = base.getByType(P);
 var peasants = base.getByType(E);
-debug ? log('E: ' + peasants.length) : null;
-var distanceWeight = 1;
-var mode = 'thief';
 for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     var peon = peons[peonIndex];
     var item;
@@ -68,7 +67,7 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
         for(var i = 0; i < items.length; ++i) {
             var possibleItem = items[i];
             var distance = peon.distance(possibleItem);
-            var score = possibleItem.bountyGold / (distance*distanceWeight);
+            var score = possibleItem.bountyGold / (distance*DISTANCE_WEIGHT);
             if (score > bestScore) {
                 // Assume E is just as smart and will get it before we do if closer.
                 if (peon.distanceSquared(possibleItem) <= peasant.distanceSquared(possibleItem)) {
@@ -103,6 +102,7 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
 
 // Build
 var expectedPeons = peons.length + this.queuedCount[Pid];
+debug ? log('E: ' + peasants.length) : null;
 debug ? log("EP: " + expectedPeons) : null;
 if (expectedPeons <= peasants.length && expectedPeons <= MAX_P) {
     this.buildQueue.unshift(P);
