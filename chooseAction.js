@@ -15,20 +15,32 @@ var SPEED = 10.0; // As provided.
 var MAX_DISTANCE_PER_FRAME = SPEED / FRAMES_PER_SECOND;
 var MAX_P = 5;
 
+// Shorthand variables
+var TYPES = ['peon', 'munchkin', 'ogre', 'shaman', 'fangrider', 'brawler', 'peasant'];
 var P = 'peon';
+var Pid = 0;
 var M = 'munchkin';
+var Mid = 1;
 var O = 'ogre';
+var Oid = 2;
 var S = 'shaman';
+var Sid = 3;
 var F = 'fangrider';
+var Fid = 4;
 var B = 'brawler';
+var Bid = 5;
 var E = 'peasant';
+var Eid = 6;
 
 // Persistent values.
-if (typeof this.peonsBuilt === 'undefined') {
-    this.peonsBuilt = 0;
-}
 if (typeof this.frames === 'undefined') {
     this.frames = 0;
+}
+if (typeof this.buildQueue === 'undefined') {
+    this.buildQueue = [];
+}
+if (typeof this.queuedCount === 'undefined') {
+    this.queuedCount = [0, 0, 0, 0, 0, 0]; // not including enemies
 }
 
 debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
@@ -37,7 +49,7 @@ debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
 var items = base.getItems();
 var peons = base.getByType(P);
 var peasants = base.getByType(E);
-debug ? log('Num peasants is ' + peasants.length) : null;
+debug ? log('E: ' + peasants.length) : null;
 var distanceWeight = 1;
 var mode = 'thief';
 for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
@@ -90,21 +102,28 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
 
 
 // Build
-var type;
-if (this.peonsBuilt <= peasants.length && this.peonsBuilt <= MAX_P) {
-    type = P;
-} else {
-    type = O;
-} 
-
-if (this.gold >= this.buildables[type].goldCost) {
-    this.build(type);
-    if (type === P) {
-        ++this.peonsBuilt;
-    }
+var expectedPeons = peons.length + this.queuedCount[Pid];
+debug ? log("EP: " + expectedPeons) : null;
+if (expectedPeons <= peasants.length && expectedPeons <= MAX_P) {
+    this.buildQueue.unshift(P);
+    ++this.queuedCount[Pid];
+} else if (this.queuedCount[Oid] < 1) {
+    this.buildQueue.push(O);
+    ++this.queuedCount[Oid];
 }
 
-debug ? log("Peons built: " + this.peonsBuilt) : null;
+if (this.buildQueue.length !== 0) {
+    var nextType = this.buildQueue[0];
+    if (this.gold >= this.buildables[nextType].goldCost) {
+        var typeId = TYPES.indexOf(nextType);
+        this.buildQueue.shift();
+        --this.queuedCount[typeId];
+        
+        this.build(nextType);
+    }
+}
+debug ? log("P: " + peons.length) : null;
+debug ? log("Q: " + this.buildQueue) : null;
 
 this.say(logger);
 ++this.frames;
