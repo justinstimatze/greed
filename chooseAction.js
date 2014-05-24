@@ -44,6 +44,9 @@ if (typeof this.buildQueue === 'undefined') {
 if (typeof this.queuedCount === 'undefined') {
     this.queuedCount = [0, 0, 0, 0, 0, 0]; // not including enemies
 }
+var MAX_COL = 6;
+var MAX_ROW = 5;
+var TILE = 14;
 
 debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
 
@@ -52,6 +55,63 @@ var items = base.getItems();
 var peons = base.getByType(P);
 var peasants = base.getByType(E);
 
+var grid = [
+[[[0,0], 0, []], [[0,1], 0, []], [[0,2], 0, []], [[0,3], 0, []], [[0,4], 0, []],[[0,5], 0, []]],
+[[[1,0], 0, []], [[1,1], 0, []], [[1,2], 0, []], [[1,3], 0, []], [[1,4], 0, []],[[1,5], 0, []]],
+[[[2,0], 0, []], [[2,1], 0, []], [[2,2], 0, []], [[2,3], 0, []], [[2,4], 0, []],[[2,5], 0, []]],
+[[[3,0], 0, []], [[3,1], 0, []], [[3,2], 0, []], [[3,3], 0, []], [[3,4], 0, []],[[3,5], 0, []]],
+[[[4,0], 0, []], [[4,1], 0, []], [[4,2], 0, []], [[4,3], 0, []], [[4,4], 0, []],[[4,5], 0, []]],
+];
+            
+// Critical loop.
+var gridCol, gridRow;
+for(var itemIndex = 0; itemIndex < items.length; ++itemIndex) {
+    var testX = items[itemIndex].pos.x;
+    if (testX < 42) {
+        if (testX < 28) {
+             if (testX < 14) {
+                 gridCol = 0;
+             } else {
+                 gridCol = 1;
+             }
+        } else {
+           gridCol = 2;
+        }
+    } else {
+        if (testX > 56) {
+            if (testX > 70) {
+                gridCol = 5;
+            } else {
+                gridCol = 4;
+            }
+        } else {
+            gridCol = 3;
+        }
+    }
+    var testY = items[itemIndex].pos.y;
+    if (testY > 28) {
+        if (testY > 42) {
+            if (testY > 56) {
+                gridRow = 0;
+            } else {
+                gridRow = 1;
+            }
+        } else {
+            gridRow = 2;
+        }
+    } else {
+        if (testY > 14) {
+            gridRow = 3;
+        } else {
+            gridRow = 4;
+        }
+    }
+    
+    grid[gridRow][gridCol][0] += items[itemIndex].bountyGold;
+}
+
+
+/* 
 for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     var peon = peons[peonIndex];
     var item;
@@ -96,8 +156,7 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
         var bestScore = -1;
         var bestScore2 = 0;
         
-        for(var itemIndex = 0; itemIndex < items.length; ++itemIndex) {
-            var possibleItem = items[itemIndex];
+
             
             var vecToPossible = Vector.subtract(possibleItem.pos, peon.pos);
             var distance = vecToPossible.magnitude();
@@ -147,13 +206,13 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
         base.command(peon, 'move', pos);
     }
 }
-
+*/
 
 // Build
 var expectedPeons = peons.length + this.queuedCount[Pid];
 debug ? log('E: ' + peasants.length) : null;
 debug ? log("EP: " + expectedPeons) : null;
-if (/*expectedPeons <= peasants.length && */ expectedPeons <= MAX_P) {
+if (expectedPeons <= peasants.length && expectedPeons <= MAX_P) {
     this.buildQueue.unshift(P);
     ++this.queuedCount[Pid];
 } else if (this.queuedCount[Oid] < 1) {
