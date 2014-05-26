@@ -12,7 +12,7 @@ function logVec(vec, name) {
 
 var FRAMES_PER_SECOND = 4.0;
 var SPEED = 10.0; // As provided.
-var MAX_DISTANCE_PER_FRAME = SPEED / FRAMES_PER_SECOND;
+var MAX_DISTANCE_PER_FRAME = 2 * SPEED / FRAMES_PER_SECOND;
 var MAX_P = 3;
 
 var DISTANCE_WEIGHT = 1;
@@ -35,82 +35,131 @@ var E = 'peasant';
 var Eid = 6;
 
 // Persistent values.
-if (typeof this.frames === 'undefined') {
-    this.frames = 0;
+if (this.now() < 0.25) {
+    if (typeof this.frames === 'undefined') {
+        this.frames = 0;
+    }
+    if (typeof this.buildQueue === 'undefined') {
+        this.buildQueue = [];
+    }
+    if (typeof this.queuedCount === 'undefined') {
+        this.queuedCount = [0, 0, 0, 0, 0, 0]; // not including enemies
+    }
+    if (typeof this.grid === 'undefined') {
+        this.grid = [];
+    }
+    if (typeof this.peons === 'undefined') {
+        this.peons = [];
+    }
+    if (typeof this.peasants === 'undefined') {
+        this.peasants = [];
+    }
 }
-if (typeof this.buildQueue === 'undefined') {
-    this.buildQueue = [];
-}
-if (typeof this.queuedCount === 'undefined') {
-    this.queuedCount = [0, 0, 0, 0, 0, 0]; // not including enemies
-}
+
 var MAX_COL = 6;
 var MAX_ROW = 5;
 var TILE = 14;
+var MAX_ITEM = 60; // Only process this many items to build heatmap.
 
 debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
 
 // Command
-var items = base.getItems();
-var peons = base.getByType(P);
-var peasants = base.getByType(E);
-
-var grid = [
-[[[0,0], 0, []], [[0,1], 0, []], [[0,2], 0, []], [[0,3], 0, []], [[0,4], 0, []],[[0,5], 0, []]],
-[[[1,0], 0, []], [[1,1], 0, []], [[1,2], 0, []], [[1,3], 0, []], [[1,4], 0, []],[[1,5], 0, []]],
-[[[2,0], 0, []], [[2,1], 0, []], [[2,2], 0, []], [[2,3], 0, []], [[2,4], 0, []],[[2,5], 0, []]],
-[[[3,0], 0, []], [[3,1], 0, []], [[3,2], 0, []], [[3,3], 0, []], [[3,4], 0, []],[[3,5], 0, []]],
-[[[4,0], 0, []], [[4,1], 0, []], [[4,2], 0, []], [[4,3], 0, []], [[4,4], 0, []],[[4,5], 0, []]],
-];
-            
-// Critical loop.
-var gridCol, gridRow;
-for(var itemIndex = 0; itemIndex < items.length; ++itemIndex) {
-    var testX = items[itemIndex].pos.x;
-    if (testX < 42) {
-        if (testX < 28) {
-             if (testX < 14) {
-                 gridCol = 0;
-             } else {
-                 gridCol = 1;
-             }
-        } else {
-           gridCol = 2;
-        }
-    } else {
-        if (testX > 56) {
-            if (testX > 70) {
-                gridCol = 5;
+if (this.frames % 2 === 0) {
+    var items = base.getItems();
+    
+    // We want all the expensive items to be processed if possible.
+    // Unbounded sort, risky.
+    items.sort(function(a,b) { return (b.bountyGold - a.bountyGold); } );
+    
+    // Item: Grid center point (x,y), value accumulator, empty item list.
+    this.grid = [
+    [[0.5,4.5], 0, []], [[1.5,4.5], 0, []], [[2.5,4.5], 0, []], [[3.5,4.5], 0, []], [[4.5,4.5], 0, []],[[5.5,4.5], 0, []],
+    [[0.5,3.5], 0, []], [[1.5,3.5], 0, []], [[2.5,3.5], 0, []], [[3.5,3.5], 0, []], [[4.5,3.5], 0, []],[[5.5,3.5], 0, []],
+    [[0.5,2.5], 0, []], [[1.5,2.5], 0, []], [[2.5,2.5], 0, []], [[3.5,2.5], 0, []], [[4.5,2.5], 0, []],[[5.5,2.5], 0, []],
+    [[0.5,1.5], 0, []], [[1.5,1.5], 0, []], [[2.5,1.5], 0, []], [[3.5,1.5], 0, []], [[4.5,1.5], 0, []],[[5.5,1.5], 0, []],
+    [[0.5,0.5], 0, []], [[1.5,0.5], 0, []], [[2.5,0.5], 0, []], [[3.5,0.5], 0, []], [[4.5,0.5], 0, []],[[5.5,0.5], 0, []],
+    ];
+                
+    // Critical loop.
+    var gridCol, gridRow;
+    for(var itemIndex = 0; itemIndex < items.length && itemIndex < MAX_ITEM; ++itemIndex) {
+        
+        // Should be a maximum of three comparisons to get an index,
+        // avoiding the division/floor cost.
+        var testX = items[itemIndex].pos.x;
+        if (testX < 42) {
+            if (testX < 28) {
+                 if (testX < 14) {
+                     gridCol = 0;
+                 } else {
+                     gridCol = 1;
+                 }
             } else {
-                gridCol = 4;
+               gridCol = 2;
             }
         } else {
-            gridCol = 3;
-        }
-    }
-    var testY = items[itemIndex].pos.y;
-    if (testY > 28) {
-        if (testY > 42) {
-            if (testY > 56) {
-                gridRow = 0;
+            if (testX > 56) {
+                if (testX > 70) {
+                    gridCol = 5;
+                } else {
+                    gridCol = 4;
+                }
             } else {
+                gridCol = 3;
+            }
+        }
+        var testY = items[itemIndex].pos.y;
+        if (testY > 28) {
+            if (testY > 42) {
+                if (testY > 56) {
+                    gridRow = 4;
+                } else {
+                    gridRow = 3;
+                }
+            } else {
+                gridRow = 2;
+            }
+        } else {
+            if (testY > 14) {
                 gridRow = 1;
+            } else {
+                gridRow = 0;
             }
-        } else {
-            gridRow = 2;
         }
-    } else {
-        if (testY > 14) {
-            gridRow = 3;
-        } else {
-            gridRow = 4;
-        }
+        
+        this.grid[gridRow*MAX_ROW + gridCol][1] += items[itemIndex].bountyGold;
+        this.grid[gridRow*MAX_ROW + gridCol][2].push(items[itemIndex]);
     }
     
-    grid[gridRow][gridCol][0] += items[itemIndex].bountyGold;
+    // Fixed size of 30.
+    this.grid.sort(function(a,b) { return (b[1] - a[1]); } );
+    
+} else {
+    this.peons = base.getByType(P);
+    this.peasants = base.getByType(E);
+    for (var hotspotIndex = 0; hotspotIndex < this.peons.length; ++hotspotIndex) {
+        var hotspot = this.grid[hotspotIndex];
+        var hotX = hotspot[0][0]*TILE;
+        var hotY = hotspot[0][1]*TILE;
+        
+        var bestScore = 9999; // Bigger than biggest distance.
+        var bestPeon = -1;
+        for (var peonIndex = 0; peonIndex < this.peons.length; ++peonIndex) {
+            var diffX = this.peons[peonIndex].pos.x - hotX;
+            var diffY = this.peons[peonIndex].pos.y - hotY;
+            var hotDistanceSquared = diffX*diffX + diffY*diffY;
+            
+            if (hotDistanceSquared < bestScore) {
+                bestPeon = peonIndex;
+                bestScore = hotDistanceSquared;
+            }
+        }
+        var pos = new Vector(hotX, hotY);
+        base.command(this.peons[bestPeon], 'move', pos);
+    }
+    
+    
 }
-
-
 /* 
 for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
     var peon = peons[peonIndex];
@@ -209,10 +258,10 @@ for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
 */
 
 // Build
-var expectedPeons = peons.length + this.queuedCount[Pid];
-debug ? log('E: ' + peasants.length) : null;
+var expectedPeons = this.peons.length + this.queuedCount[Pid];
+debug ? log('E: ' + this.peasants.length) : null;
 debug ? log("EP: " + expectedPeons) : null;
-if (expectedPeons <= peasants.length && expectedPeons <= MAX_P) {
+if (expectedPeons <= this.peasants.length && expectedPeons <= MAX_P) {
     this.buildQueue.unshift(P);
     ++this.queuedCount[Pid];
 } else if (this.queuedCount[Oid] < 1) {
@@ -230,7 +279,7 @@ if (this.buildQueue.length !== 0) {
         this.build(nextType);
     }
 }
-debug ? log("P: " + peons.length) : null;
+debug ? log("P: " + this.peons.length) : null;
 debug ? log("Q: " + this.buildQueue) : null;
 
 this.say(logger);
