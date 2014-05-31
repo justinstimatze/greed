@@ -61,6 +61,55 @@ var MAX_ROW = 5;
 var TILE = 14;
 var MAX_ITEM = 60; // Only process this many items to build heatmap.
 
+function byValue (a,b) { return (b.bountyGold - a.bountyGold); }
+
+// Should be a maximum of three comparisons to get an index,
+// avoiding the division/floor cost.
+function getCell(testX, testY) {
+    var gridCol, gridRow;
+    
+    if (testX < 42) {
+        if (testX < 28) {
+             if (testX < 14) {
+                 gridCol = 0;
+             } else {
+                 gridCol = 1;
+             }
+        } else {
+           gridCol = 2;
+        }
+    } else {
+        if (testX > 56) {
+            if (testX > 70) {
+                gridCol = 5;
+            } else {
+                gridCol = 4;
+            }
+        } else {
+            gridCol = 3;
+        }
+    }
+    if (testY > 28) {
+        if (testY > 42) {
+            if (testY > 56) {
+                gridRow = 4;
+            } else {
+                gridRow = 3;
+            }
+        } else {
+            gridRow = 2;
+        }
+    } else {
+        if (testY > 14) {
+            gridRow = 1;
+        } else {
+            gridRow = 0;
+        }
+    }
+    
+    return gridRow*MAX_ROW + gridCol;
+}
+
 debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
 
 // Command
@@ -69,7 +118,7 @@ if (this.frames % 2 === 0) {
     
     // We want all the expensive items to be processed if possible.
     // Unbounded sort, risky.
-    items.sort(function(a,b) { return (b.bountyGold - a.bountyGold); } );
+    items.sort(byValue);
     
     // Item: Grid center point (x,y), value accumulator, empty item list.
     this.grid = [
@@ -81,84 +130,27 @@ if (this.frames % 2 === 0) {
     ];
                 
     // Critical loop.
-    var gridCol, gridRow;
     for(var itemIndex = 0; itemIndex < items.length && itemIndex < MAX_ITEM; ++itemIndex) {
         
-        // Should be a maximum of three comparisons to get an index,
-        // avoiding the division/floor cost.
         var testX = items[itemIndex].pos.x;
-        if (testX < 42) {
-            if (testX < 28) {
-                 if (testX < 14) {
-                     gridCol = 0;
-                 } else {
-                     gridCol = 1;
-                 }
-            } else {
-               gridCol = 2;
-            }
-        } else {
-            if (testX > 56) {
-                if (testX > 70) {
-                    gridCol = 5;
-                } else {
-                    gridCol = 4;
-                }
-            } else {
-                gridCol = 3;
-            }
-        }
         var testY = items[itemIndex].pos.y;
-        if (testY > 28) {
-            if (testY > 42) {
-                if (testY > 56) {
-                    gridRow = 4;
-                } else {
-                    gridRow = 3;
-                }
-            } else {
-                gridRow = 2;
-            }
-        } else {
-            if (testY > 14) {
-                gridRow = 1;
-            } else {
-                gridRow = 0;
-            }
-        }
+
+        var gridIndex = getCell(testX, testY);
         
-        this.grid[gridRow*MAX_ROW + gridCol][1] += items[itemIndex].bountyGold;
-        this.grid[gridRow*MAX_ROW + gridCol][2].push(items[itemIndex]);
+        this.grid[gridIndex][1] += items[itemIndex].bountyGold;
+        this.grid[gridIndex][2].push(items[itemIndex]);
     }
     
     // Fixed size of 30.
-    this.grid.sort(function(a,b) { return (b[1] - a[1]); } );
+    //this.grid.sort(function(a,b) { return (b[1] - a[1]); } );
     
 } else {
     this.peons = base.getByType(P);
     this.peasants = base.getByType(E);
-    for (var hotspotIndex = 0; hotspotIndex < this.peons.length; ++hotspotIndex) {
-        var hotspot = this.grid[hotspotIndex];
-        var hotX = hotspot[0][0]*TILE;
-        var hotY = hotspot[0][1]*TILE;
+
+    for (var peonIndex = 0; peonIndex < this.peons.length; ++peonIndex) {
         
-        var bestScore = 9999; // Bigger than biggest distance.
-        var bestPeon = -1;
-        for (var peonIndex = 0; peonIndex < this.peons.length; ++peonIndex) {
-            var diffX = this.peons[peonIndex].pos.x - hotX;
-            var diffY = this.peons[peonIndex].pos.y - hotY;
-            var hotDistanceSquared = diffX*diffX + diffY*diffY;
-            
-            if (hotDistanceSquared < bestScore) {
-                bestPeon = peonIndex;
-                bestScore = hotDistanceSquared;
-            }
-        }
-        var pos = new Vector(hotX, hotY);
-        base.command(this.peons[bestPeon], 'move', pos);
     }
-    
-    
 }
 /* 
 for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
