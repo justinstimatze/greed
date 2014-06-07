@@ -16,6 +16,8 @@ var MAX_DISTANCE_PER_FRAME = 2 * SPEED / FRAMES_PER_SECOND;
 var MAX_P = 3;
 
 var DISTANCE_WEIGHT = 1;
+var FRIENDLY_FACTOR = 0.0;
+var ENEMY_FACTOR = 0.0;
 
 // Shorthand variables
 var TYPES = ['peon', 'munchkin', 'ogre', 'shaman', 'fangrider', 'brawler', 'peasant'];
@@ -107,7 +109,7 @@ function getCell(testX, testY) {
         }
     }
     
-    return gridRow*MAX_ROW + gridCol;
+    return [gridRow*MAX_ROW + gridCol, gridRow, gridCol];
 }
 
 debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
@@ -135,22 +137,30 @@ if (this.frames % 2 === 0) {
         var testX = items[itemIndex].pos.x;
         var testY = items[itemIndex].pos.y;
 
-        var gridIndex = getCell(testX, testY);
+        var gridIndex = getCell(testX, testY)[0];
         
         this.grid[gridIndex][1] += items[itemIndex].bountyGold;
         this.grid[gridIndex][2].push(items[itemIndex]);
     }
     
-    // Fixed size of 30.
-    //this.grid.sort(function(a,b) { return (b[1] - a[1]); } );
-    
 } else {
     this.peons = base.getByType(P);
-    this.peasants = base.getByType(E);
-
     for (var peonIndex = 0; peonIndex < this.peons.length; ++peonIndex) {
+        var peonPos = this.peons[peonIndex].pos;
+        var peonGridIndex = getCell(peonPos.x, peonPos.y)[0];
         
+        this.grid[peonGridIndex][1] *= FRIENDLY_FACTOR;
     }
+    
+    this.peasants = base.getByType(E);
+    for (var peasantIndex = 0; peasantIndex < this.peasants.length; ++peasantIndex) {
+        var peasantPos = this.peasants[peasantIndex].pos;
+        var peasantGridIndex = getCell(peasantPos.x, peasantPos.y)[0];
+        
+        this.grid[peasantGridIndex][1] *= ENEMY_FACTOR;
+    }
+    
+    
 }
 /* 
 for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
