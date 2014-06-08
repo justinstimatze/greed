@@ -1,7 +1,7 @@
 // Init
 
 var base = this;
-var debug = true;
+var debug = false;
 var logger = '';
 function log(event) {
     logger += event + '; ';
@@ -170,7 +170,6 @@ if (this.frames % 2 === 0) {
         peonGridIndex = peonIndexCache[peonIndex][0];
         peonGridRow = peonIndexCache[peonIndex][1];
         peonGridCol = peonIndexCache[peonIndex][2];
-        log("PG:" + peonGridIndex);
         var bestScore = -1;
         var bestCellIndex;
         // Ensure "don't move" is first because we use > in score comparison.
@@ -205,7 +204,6 @@ if (this.frames % 2 === 0) {
         // Look in each nearest cell, if it exists.    
         for (var testIndex in testCells) {
             var testCellIndex = testCells[testIndex];
-            log(testCellIndex + "=" + this.grid[testCellIndex][1]);
             if (this.grid[testCellIndex][1] > bestScore) {
                 var peonCheck = peonIndexCache.indexOf(testCellIndex);
                 // Not found OR Self
@@ -262,13 +260,12 @@ if (this.frames % 2 === 0) {
             pos = nearestItem.pos;
         }
         
-        //var step = Vector.subtract(pos, peon.pos);
-        
         // Protect my targetPos from multi turn spying.
         // Also, take the smallest step possible (grab distance is 4.8ish)
-        //step = Vector.limit(step, MAX_DISTANCE_PER_FRAME);
+        var step = Vector.subtract(pos, peon.pos);
+        step = Vector.limit(step, MAX_DISTANCE_PER_FRAME);
+        pos = Vector.add(peon.pos, step);
         
-        //pos = Vector.add(peon.pos, step);
         base.command(peon, 'move', pos);
         
     }
