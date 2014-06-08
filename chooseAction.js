@@ -271,9 +271,8 @@ debug ? log("EP: " + expectedPeons) : null;
 
 // Mixed force burst
 if (this.health < 300 || expectedPeons === MAX_P) {
-    if (this.gold >= 85) {
-        this.buildQueue.unshift(S);
-        this.buildQueue.unshift(O);
+    if (this.gold >= 30) {
+        this.buildQueue.unshift(M);
         this.buildQueue.unshift(M);
         this.buildQueue.unshift(M);
     }
