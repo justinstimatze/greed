@@ -15,7 +15,8 @@ var SPEED = 10.0; // As provided.
 var MAX_DISTANCE_PER_FRAME = 2 * SPEED / FRAMES_PER_SECOND;
 var MAX_P = 3;
 
-var DISTANCE_WEIGHT = 1;
+var ANGLE_FACTOR = 1.0;
+var DISTANCE_FACTOR = 1;
 var FRIENDLY_FACTOR = 0.0;
 var ENEMY_FACTOR = 0.0;
 
@@ -232,8 +233,8 @@ if (this.frames % 2 === 0) {
             
             var roughStep = Vector.subtract(pos, peon.pos);
             
-            var score = 9999; // Invalid
-            var bestItem;
+            var score = 99999; // Invalid
+            var bestItem = peon.getNearest(base.getItems()); // Fallback
             var itemsEnroute = this.grid[peonGridIndex][2].concat(bestCell[2]);
             for (var enrouteIndex = 0; enrouteIndex < itemsEnroute.length; ++enrouteIndex) {
                 var enrouteItem = itemsEnroute[enrouteIndex];
@@ -242,8 +243,8 @@ if (this.frames % 2 === 0) {
                 enrouteProduct /= (roughStep.magnitude()*enrouteStep.magnitude());
                 if (enrouteProduct > 1) { enrouteProduct = 1; } 
                 else if (enrouteProduct < -1) { enrouteProduct = -1; }
-                var enrouteAngle = Math.acos(enrouteProduct) / Math.PI; // Scales 0 to 1
-                var enrouteDistance = enrouteStep.magnitude()/roughStep.magnitude(); // Scales 0 to ~1
+                var enrouteAngle = ANGLE_FACTOR*Math.acos(enrouteProduct) / Math.PI; // Scales 0 to 1
+                var enrouteDistance = DISTANCE_FACTOR*enrouteStep.magnitude()/roughStep.magnitude(); // Scales 0 to ~1
                 var enrouteScore = enrouteAngle + enrouteDistance;
                 if (enrouteScore < bestScore) {
                     bestScore = enrouteScore;
