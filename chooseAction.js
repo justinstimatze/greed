@@ -58,8 +58,11 @@ if (this.now() < 0.25) {
     }
 }
 
+var GRID_ROWS = 5;
 var GRID_COLS = 6;
 var GRID_MAX = 29;
+var TOP_ROW = (GRID_ROWS - 1);
+var RIGHT_COL = (GRID_COLS - 1);
 var TILE = 14;
 var MAX_ITEM = 60; // Only process this many items to build heatmap.
 
@@ -130,7 +133,13 @@ if (this.frames % 2 === 0) {
 	[[0.5,3.5], 0, []], [[1.5,3.5], 0, []], [[2.5,3.5], 0, []], [[3.5,3.5], 0, []], [[4.5,3.5], 0, []],[[5.5,3.5], 0, []],
     [[0.5,4.5], 0, []], [[1.5,4.5], 0, []], [[2.5,4.5], 0, []], [[3.5,4.5], 0, []], [[4.5,4.5], 0, []],[[5.5,4.5], 0, []],    
     ];
-                
+    // Cheatsheet:
+    // 24,25,26,27,28,29
+    // 18,19,20,21,22,23
+    // 12,13,14,15,16,17
+    // 06,07,08,09,10,11
+    // 00,01,02,03,04,05
+    
     // Critical loop.
     for(var itemIndex = 0; itemIndex < items.length && itemIndex < MAX_ITEM; ++itemIndex) {
         
@@ -148,7 +157,7 @@ if (this.frames % 2 === 0) {
     this.peons = base.getByType(P);
     for (var peonIndex = 0; peonIndex < this.peons.length; ++peonIndex) {
         var peonPos = this.peons[peonIndex].pos;
-        var peonGridIndex = getCell(peonPos.x, peonPos.y)[0];
+        var peonGridIndex = getCell(peonPos.x, peonPos.y);
         peonIndexCache[peonIndex] = peonGridIndex;
     }
     
@@ -162,34 +171,51 @@ if (this.frames % 2 === 0) {
     
     for (peonIndex = 0; peonIndex < this.peons.length; ++peonIndex) {
         var peon = this.peons[peonIndex];
-        peonGridIndex = peonIndexCache[peonIndex];
+        peonGridIndex = peonIndexCache[peonIndex][0];
+        peonGridRow = peonIndexCache[peonIndex][1];
+        peonGridCol = peonIndexCache[peonIndex][2];
+        log("PG:" + peonGridIndex);
         var bestScore = -1;
         var bestCellIndex;
         // Ensure "don't move" is first because we use > in score comparison.
         // It will remain the best case with sparse-equal cells.
-        var testCells = [peonGridIndex, // Don't move.
-                         peonGridIndex + GRID_COLS, // N
-                         peonGridIndex + GRID_COLS + 1, // NE
-                         peonGridIndex + GRID_COLS - 1, // NW
-                         peonGridIndex + 1, // E
-                         peonGridIndex - 1, // W
-                         peonGridIndex - GRID_COLS, // S
-                         peonGridIndex - GRID_COLS + 1, // SE
-                         peonGridIndex - GRID_COLS - 1 // SW
-                        ];
+        var testCells = [peonGridIndex]; // Don't move.
+
+        if (peonGridRow < TOP_ROW) {
+            testCells.push(peonGridIndex + GRID_COLS); // N
+            if (peonGridCol > 0) {
+                testCells.push(peonGridIndex + GRID_COLS - 1); // NW
+            }
+            if (peonGridCol < RIGHT_COL) {
+                testCells.push(peonGridIndex + GRID_COLS + 1); // NE
+            }
+        }
+        if (peonGridCol > 0) {
+           testCells.push(peonGridIndex - 1); // W
+        }
+        if (peonGridCol < RIGHT_COL) {
+            testCells.push(peonGridIndex + 1); // E
+        }
+        if (peonGridRow > 0) { // Not bottom row.
+            testCells.push(peonGridIndex - GRID_COLS); // S
+            if (peonGridCol > 0) {
+                testCells.push(peonGridIndex - GRID_COLS - 1); // SW
+            }
+            if (peonGridCol < RIGHT_COL) {
+                testCells.push(peonGridIndex - GRID_COLS + 1); // sE
+            }
+        }
         
         // Look in each nearest cell, if it exists.    
         for (var testIndex in testCells) {
             var testCellIndex = testCells[testIndex];
-            if (testCellIndex > 0 && testCellIndex <= GRID_MAX) {
-                //log(testCellIndex + "=" + this.grid[testCellIndex][1]);
-                if (this.grid[testCellIndex][1] > bestScore) {
-                    var peonCheck = peonIndexCache.indexOf(testCellIndex);
-                    // Not found OR Self
-                    if (peonCheck === -1 || peonCheck === peonIndex) {
-                        bestScore = this.grid[testCellIndex][1];
-                        bestCellIndex = testCellIndex;
-                    }
+            log(testCellIndex + "=" + this.grid[testCellIndex][1]);
+            if (this.grid[testCellIndex][1] > bestScore) {
+                var peonCheck = peonIndexCache.indexOf(testCellIndex);
+                // Not found OR Self
+                if (peonCheck === -1 || peonCheck === peonIndex) {
+                    bestScore = this.grid[testCellIndex][1];
+                    bestCellIndex = testCellIndex;
                 }
             }
         }
@@ -222,8 +248,8 @@ if (this.frames % 2 === 0) {
                 enrouteProduct /= (roughStep.magnitude()*enrouteStep.magnitude());
                 if (enrouteProduct > 1) { enrouteProduct = 1; } 
                 else if (enrouteProduct < -1) { enrouteProduct = -1; }
-                var enrouteAngle = Math.acos(enrouteProduct);
-                var enrouteDistance = enrouteStep.magnitude()/roughStep.magnitude();
+                var enrouteAngle = Math.acos(enrouteProduct) / Math.PI; // Scales 0 to 1
+                var enrouteDistance = enrouteStep.magnitude()/roughStep.magnitude(); // Scales 0 to ~1
                 var enrouteScore = enrouteAngle + enrouteDistance;
                 if (enrouteScore < bestScore) {
                     bestScore = enrouteScore;
