@@ -44,10 +44,10 @@ if (this.now() < 0.25) {
         this.frames = 0;
     }
     if (typeof this.buildQueue === 'undefined') {
-        this.buildQueue = [];
+        this.buildQueue = [P, M, P, O, P];
     }
     if (typeof this.queuedCount === 'undefined') {
-        this.queuedCount = [0, 0, 0, 0, 0, 0]; // not including enemies
+        this.queuedCount = [3, 1, 1, 0, 0, 0]; // not including enemies
     }
     if (typeof this.grid === 'undefined') {
         this.grid = [];
@@ -277,12 +277,28 @@ if (this.frames % 2 === 0) {
 var expectedPeons = this.peons.length + this.queuedCount[Pid];
 debug ? log('E: ' + this.peasants.length) : null;
 debug ? log("EP: " + expectedPeons) : null;
-if (expectedPeons <= this.peasants.length && expectedPeons <= MAX_P) {
-    this.buildQueue.unshift(P);
-    ++this.queuedCount[Pid];
-} else if (this.gold >= 60) {
-    var randomUnit = 1+Math.floor(Math.random()*(this.peons.length + 1));
-    this.buildQueue.push(TYPES[randomUnit]);
+// Burst
+if (this.gold >= 50 && this.buildQueue.length === 0) {
+        var randomUnit = Math.floor(Math.random()*4);
+        if (randomUnit === Pid && expectedPeons <= MAX_P) {
+            this.buildQueue.push(P);
+            this.queuedCount[Pid] += 1;
+        }
+        else if (randomUnit === Mid) {
+            this.buildQueue.push(M);
+            this.buildQueue.push(M);
+            this.buildQueue.push(M);
+            this.buildQueue.push(M);
+            this.buildQueue.push(M);
+            this.queuedCount[Mid] += 5;
+        } else if (randomUnit === Oid) {
+            this.buildQueue.push(O);
+            this.buildQueue.push(O);
+            this.queuedCount[Oid] += 2;
+        } else if (randomUnit === Sid) {
+            this.buildQueue.push(S);
+            this.queuedCount[Sid] += 1;
+        }
 }
 
 if (this.buildQueue.length !== 0) {
