@@ -212,7 +212,7 @@ if (this.frames % 2 === 0) {
             
             var roughStep = Vector.subtract(pos, peon.pos);
             
-            var bestAngle = 9999; // Invalid
+            var score = 9999; // Invalid
             var bestItem;
             var itemsEnroute = this.grid[peonGridIndex][2].concat(bestCell[2]);
             for (var enrouteIndex = 0; enrouteIndex < itemsEnroute.length; ++enrouteIndex) {
@@ -223,8 +223,10 @@ if (this.frames % 2 === 0) {
                 if (enrouteProduct > 1) { enrouteProduct = 1; } 
                 else if (enrouteProduct < -1) { enrouteProduct = -1; }
                 var enrouteAngle = Math.acos(enrouteProduct);
-                if (enrouteAngle < bestAngle) {
-                    bestAngle = enrouteAngle;
+                var enrouteDistance = enrouteStep.magnitude()/roughStep.magnitude();
+                var enrouteScore = enrouteAngle + enrouteDistance;
+                if (enrouteScore < bestScore) {
+                    bestScore = enrouteScore;
                     bestItem = enrouteItem;
                 }
             }
