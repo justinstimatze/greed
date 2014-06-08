@@ -163,11 +163,10 @@ if (this.frames % 2 === 0) {
     for (peonIndex = 0; peonIndex < this.peons.length; ++peonIndex) {
         var peon = this.peons[peonIndex];
         peonGridIndex = peonIndexCache[peonIndex];
-        log("PG:" + peonGridIndex);
         var bestScore = -1;
         var bestCellIndex;
         // Ensure "don't move" is first because we use > in score comparison.
-        // It will remain the best case with spare/equal cells.
+        // It will remain the best case with sparse-equal cells.
         var testCells = [peonGridIndex, // Don't move.
                          peonGridIndex + GRID_COLS, // N
                          peonGridIndex + GRID_COLS + 1, // NE
@@ -183,7 +182,7 @@ if (this.frames % 2 === 0) {
         for (var testIndex in testCells) {
             var testCellIndex = testCells[testIndex];
             if (testCellIndex > 0 && testCellIndex <= GRID_MAX) {
-                log(testCellIndex + "=" + this.grid[testCellIndex][1]);
+                //log(testCellIndex + "=" + this.grid[testCellIndex][1]);
                 if (this.grid[testCellIndex][1] > bestScore) {
                     var peonCheck = peonIndexCache.indexOf(testCellIndex);
                     // Not found OR Self
@@ -197,7 +196,6 @@ if (this.frames % 2 === 0) {
         
         var pos;
         if (bestScore > 0) {
-            log("B:"+bestCellIndex);
             var bestCell = this.grid[bestCellIndex];
             var cellItems = bestCell[2];
             var xcm = 0;
@@ -212,14 +210,32 @@ if (this.frames % 2 === 0) {
  
             pos = new Vector(xcm, ycm);
             
-            bestCell[1] *= FRIENDLY_FACTOR; // For the next peon to avoid.
+            var roughStep = Vector.subtract(pos, peon.pos);
             
-            log("P1:" + pos);
+            var bestAngle = 9999; // Invalid
+            var bestItem;
+            var itemsEnroute = this.grid[peonGridIndex][2].concat(bestCell[2]);
+            for (var enrouteIndex = 0; enrouteIndex < itemsEnroute.length; ++enrouteIndex) {
+                var enrouteItem = itemsEnroute[enrouteIndex];
+                var enrouteStep = Vector.subtract(enrouteItem.pos, peon.pos);
+                var enrouteProduct = roughStep.dot(enrouteStep);
+                enrouteProduct /= (roughStep.magnitude()*enrouteStep.magnitude());
+                if (enrouteProduct > 1) { enrouteProduct = 1; } 
+                else if (enrouteProduct < -1) { enrouteProduct = -1; }
+                var enrouteAngle = Math.acos(enrouteProduct);
+                if (enrouteAngle < bestAngle) {
+                    bestAngle = enrouteAngle;
+                    bestItem = enrouteItem;
+                }
+            }
+            
+            pos = bestItem.pos;
+
+            bestCell[1] *= FRIENDLY_FACTOR; // For the next peon to avoid.
         } else {
             // Fallback, assume there's at least one item.
             var nearestItem = peon.getNearest(base.getItems());
             pos = nearestItem.pos;
-            log("P2:" + pos);
         }
         
         //var step = Vector.subtract(pos, peon.pos);
