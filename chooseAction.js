@@ -15,9 +15,10 @@ var SPEED = 10.0; // As provided.
 var MAX_DISTANCE_PER_FRAME = 2 * SPEED / FRAMES_PER_SECOND;
 var MAX_P = 3;
 
-var ANGLE_FACTOR = 1.0;
-var DISTANCE_FACTOR = 1;
-var FRIENDLY_FACTOR = 0.0;
+// Trial and error.
+var ANGLE_FACTOR = 1.1;
+var DISTANCE_FACTOR = 1.0;
+var FRIEND_FACTOR = 0.0;
 var ENEMY_FACTOR = 0.0;
 
 // Shorthand variables
@@ -65,7 +66,6 @@ var GRID_MAX = 29;
 var TOP_ROW = (GRID_ROWS - 1);
 var RIGHT_COL = (GRID_COLS - 1);
 var TILE = 14;
-var MAX_ITEM = 60; // Only process this many items to build heatmap.
 
 function byValue (a,b) { return (b.bountyGold - a.bountyGold); }
 
@@ -123,13 +123,13 @@ if (this.frames % 2 === 0) {
     var items = base.getItems();
 
     // Item: Grid center point (x,y), value accumulator, empty item list.
-    this.grid = [
-	[[0.5,0.5], 0, []], [[1.5,0.5], 0, []], [[2.5,0.5], 0, []], [[3.5,0.5], 0, []], [[4.5,0.5], 0, []],[[5.5,0.5], 0, []],
-	[[0.5,1.5], 0, []], [[1.5,1.5], 0, []], [[2.5,1.5], 0, []], [[3.5,1.5], 0, []], [[4.5,1.5], 0, []],[[5.5,1.5], 0, []],
-	[[0.5,2.5], 0, []], [[1.5,2.5], 0, []], [[2.5,2.5], 0, []], [[3.5,2.5], 0, []], [[4.5,2.5], 0, []],[[5.5,2.5], 0, []],
-	[[0.5,3.5], 0, []], [[1.5,3.5], 0, []], [[2.5,3.5], 0, []], [[3.5,3.5], 0, []], [[4.5,3.5], 0, []],[[5.5,3.5], 0, []],
-    [[0.5,4.5], 0, []], [[1.5,4.5], 0, []], [[2.5,4.5], 0, []], [[3.5,4.5], 0, []], [[4.5,4.5], 0, []],[[5.5,4.5], 0, []],    
-    ];
+	this.grid = [
+	[[0.5,0.5], 0, [], 0], [[1.5,0.5], 0, [], 0], [[2.5,0.5], 0, [], 0], [[3.5,0.5], 0, [], 0], [[4.5,0.5], 0, [], 0],[[5.5,0.5], 0, [], 0],
+	[[0.5,1.5], 0, [], 0], [[1.5,1.5], 0, [], 0], [[2.5,1.5], 0, [], 0], [[3.5,1.5], 0, [], 0], [[4.5,1.5], 0, [], 0],[[5.5,1.5], 0, [], 0],
+	[[0.5,2.5], 0, [], 0], [[1.5,2.5], 0, [], 0], [[2.5,2.5], 0, [], 0], [[3.5,2.5], 0, [], 0], [[4.5,2.5], 0, [], 0],[[5.5,2.5], 0, [], 0],
+	[[0.5,3.5], 0, [], 0], [[1.5,3.5], 0, [], 0], [[2.5,3.5], 0, [], 0], [[3.5,3.5], 0, [], 0], [[4.5,3.5], 0, [], 0],[[5.5,3.5], 0, [], 0],
+	[[0.5,4.5], 0, [], 0], [[1.5,4.5], 0, [], 0], [[2.5,4.5], 0, [], 0], [[3.5,4.5], 0, [], 0], [[4.5,4.5], 0, [], 0],[[5.5,4.5], 0, [], 0],    
+	];
     // Cheatsheet:
     // 24,25,26,27,28,29
     // 18,19,20,21,22,23
@@ -149,6 +149,14 @@ if (this.frames % 2 === 0) {
         this.grid[gridIndex][2].push(items[itemIndex]);
     }
     
+    this.peasants = base.getByType(E);
+    for (var peasantIndex = 0; peasantIndex < this.peasants.length; ++peasantIndex) {
+        var peasantPos = this.peasants[peasantIndex].pos;
+        var peasantGridIndex = getCell(peasantPos.x, peasantPos.y)[0];
+        
+        this.grid[peasantGridIndex][1] *= ENEMY_FACTOR;
+    }
+    
 } else {
     var peonIndexCache = [];
     this.peons = base.getByType(P);
@@ -156,14 +164,7 @@ if (this.frames % 2 === 0) {
         var peonPos = this.peons[peonIndex].pos;
         var peonGridIndex = getCell(peonPos.x, peonPos.y);
         peonIndexCache[peonIndex] = peonGridIndex;
-    }
-    
-    this.peasants = base.getByType(E);
-    for (var peasantIndex = 0; peasantIndex < this.peasants.length; ++peasantIndex) {
-        var peasantPos = this.peasants[peasantIndex].pos;
-        var peasantGridIndex = getCell(peasantPos.x, peasantPos.y)[0];
-        
-        this.grid[peasantGridIndex][1] *= ENEMY_FACTOR;
+        ++this.grid[peonGridIndex[0]][3];
     }
     
     for (peonIndex = 0; peonIndex < this.peons.length; ++peonIndex) {
@@ -205,13 +206,13 @@ if (this.frames % 2 === 0) {
         // Look in each nearest cell, if it exists.    
         for (var testIndex in testCells) {
             var testCellIndex = testCells[testIndex];
-            if (this.grid[testCellIndex][1] > bestScore) {
-                var peonCheck = peonIndexCache.indexOf(testCellIndex);
-                // Not found OR Self
-                if (peonCheck === -1 || peonCheck === peonIndex) {
-                    bestScore = this.grid[testCellIndex][1];
-                    bestCellIndex = testCellIndex;
-                }
+            var testCellScore = this.grid[testCellIndex][1];
+            if (testIndex > 0 && this.grid[testCellIndex][3] > 0) {
+                testCellScore *= FRIEND_FACTOR;
+            }
+            if (testCellScore > bestScore) {
+                bestScore = this.grid[testCellIndex][1];
+                bestCellIndex = testCellIndex;
             }
         }
         
