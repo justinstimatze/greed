@@ -120,11 +120,7 @@ debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
 // Command
 if (this.frames % 2 === 0) {
     var items = base.getItems();
-    
-    // We want all the expensive items to be processed if possible.
-    // Unbounded sort, risky.
-    items.sort(byValue);
-    
+
     // Item: Grid center point (x,y), value accumulator, empty item list.
     this.grid = [
 	[[0.5,0.5], 0, []], [[1.5,0.5], 0, []], [[2.5,0.5], 0, []], [[3.5,0.5], 0, []], [[4.5,0.5], 0, []],[[5.5,0.5], 0, []],
@@ -141,7 +137,7 @@ if (this.frames % 2 === 0) {
     // 00,01,02,03,04,05
     
     // Critical loop.
-    for(var itemIndex = 0; itemIndex < items.length && itemIndex < MAX_ITEM; ++itemIndex) {
+    for(var itemIndex = 0; itemIndex < items.length; ++itemIndex) {
         
         var testX = items[itemIndex].pos.x;
         var testY = items[itemIndex].pos.y;
@@ -204,7 +200,7 @@ if (this.frames % 2 === 0) {
             if (peonGridCol < RIGHT_COL) {
                 testCells.push(peonGridIndex - GRID_COLS + 1); // sE
             }
-        }
+        } 
         
         // Look in each nearest cell, if it exists.    
         for (var testIndex in testCells) {
