@@ -13,7 +13,7 @@ function logVec(vec, name) {
 var FRAMES_PER_SECOND = 4.0;
 var SPEED = 10.0; // As provided.
 var MAX_DISTANCE_PER_FRAME = 2 * SPEED / FRAMES_PER_SECOND;
-var MAX_P = 3;
+var MAX_P = 5;
 
 // Trial and error.
 var ANGLE_FACTOR = 1.1;
@@ -280,9 +280,9 @@ debug ? log("EP: " + expectedPeons) : null;
 if (expectedPeons <= this.peasants.length && expectedPeons <= MAX_P) {
     this.buildQueue.unshift(P);
     ++this.queuedCount[Pid];
-} else if (this.queuedCount[Oid] < 1) {
-    this.buildQueue.push(O);
-    ++this.queuedCount[Oid];
+} else if (this.gold >= 60) {
+    var randomUnit = 1+Math.floor(Math.random()*(this.peons.length + 1));
+    this.buildQueue.push(TYPES[randomUnit]);
 }
 
 if (this.buildQueue.length !== 0) {
