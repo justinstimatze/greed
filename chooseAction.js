@@ -58,8 +58,8 @@ if (this.now() < 0.25) {
     }
 }
 
-var MAX_COL = 6;
-var MAX_ROW = 5;
+var GRID_COLS = 6;
+var GRID_MAX = 29;
 var TILE = 14;
 var MAX_ITEM = 60; // Only process this many items to build heatmap.
 
@@ -109,7 +109,7 @@ function getCell(testX, testY) {
         }
     }
     
-    return [gridRow*MAX_ROW + gridCol, gridRow, gridCol];
+    return [gridRow*GRID_COLS + gridCol, gridRow, gridCol];
 }
 
 debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
@@ -124,11 +124,11 @@ if (this.frames % 2 === 0) {
     
     // Item: Grid center point (x,y), value accumulator, empty item list.
     this.grid = [
-    [[0.5,4.5], 0, []], [[1.5,4.5], 0, []], [[2.5,4.5], 0, []], [[3.5,4.5], 0, []], [[4.5,4.5], 0, []],[[5.5,4.5], 0, []],
-    [[0.5,3.5], 0, []], [[1.5,3.5], 0, []], [[2.5,3.5], 0, []], [[3.5,3.5], 0, []], [[4.5,3.5], 0, []],[[5.5,3.5], 0, []],
-    [[0.5,2.5], 0, []], [[1.5,2.5], 0, []], [[2.5,2.5], 0, []], [[3.5,2.5], 0, []], [[4.5,2.5], 0, []],[[5.5,2.5], 0, []],
-    [[0.5,1.5], 0, []], [[1.5,1.5], 0, []], [[2.5,1.5], 0, []], [[3.5,1.5], 0, []], [[4.5,1.5], 0, []],[[5.5,1.5], 0, []],
-    [[0.5,0.5], 0, []], [[1.5,0.5], 0, []], [[2.5,0.5], 0, []], [[3.5,0.5], 0, []], [[4.5,0.5], 0, []],[[5.5,0.5], 0, []],
+	[[0.5,0.5], 0, []], [[1.5,0.5], 0, []], [[2.5,0.5], 0, []], [[3.5,0.5], 0, []], [[4.5,0.5], 0, []],[[5.5,0.5], 0, []],
+	[[0.5,1.5], 0, []], [[1.5,1.5], 0, []], [[2.5,1.5], 0, []], [[3.5,1.5], 0, []], [[4.5,1.5], 0, []],[[5.5,1.5], 0, []],
+	[[0.5,2.5], 0, []], [[1.5,2.5], 0, []], [[2.5,2.5], 0, []], [[3.5,2.5], 0, []], [[4.5,2.5], 0, []],[[5.5,2.5], 0, []],
+	[[0.5,3.5], 0, []], [[1.5,3.5], 0, []], [[2.5,3.5], 0, []], [[3.5,3.5], 0, []], [[4.5,3.5], 0, []],[[5.5,3.5], 0, []],
+    [[0.5,4.5], 0, []], [[1.5,4.5], 0, []], [[2.5,4.5], 0, []], [[3.5,4.5], 0, []], [[4.5,4.5], 0, []],[[5.5,4.5], 0, []],    
     ];
                 
     // Critical loop.
@@ -144,12 +144,12 @@ if (this.frames % 2 === 0) {
     }
     
 } else {
+    var peonIndexCache = [];
     this.peons = base.getByType(P);
     for (var peonIndex = 0; peonIndex < this.peons.length; ++peonIndex) {
         var peonPos = this.peons[peonIndex].pos;
         var peonGridIndex = getCell(peonPos.x, peonPos.y)[0];
-        
-        this.grid[peonGridIndex][1] *= FRIENDLY_FACTOR;
+        peonIndexCache[peonIndex] = peonGridIndex;
     }
     
     this.peasants = base.getByType(E);
@@ -160,104 +160,79 @@ if (this.frames % 2 === 0) {
         this.grid[peasantGridIndex][1] *= ENEMY_FACTOR;
     }
     
-    
-}
-/* 
-for (var peonIndex = 0; peonIndex < peons.length; peonIndex++) {
-    var peon = peons[peonIndex];
-    var item;
-    var pos;
-    
-    var friendsWeight = [0, 0, 0, 0]; // Right, Up, Left, Down.
-    
-    // Both small lists, should be quick.
-    var peasant = peon.getNearest(peasants);
-    var accomplice = peasant.getNearest(peons);
-    
-    var stealTarget = peasant.targetPos;
-    var stealDistance = peon.distanceSquared(stealTarget);
-    if (stealDistance <= peasant.distanceSquared(stealTarget) && stealDistance <= accomplice.distanceSquared(stealTarget)) {
-        // Attept to deny their grab unless another peon is closer.
-        pos = stealTarget;
-        debug ? log(peon.id[0] + "=S") : null;
-    } else {
-        
-        // Avoid ourselves
-        for (var friendIndex = 0; friendIndex < peons.length; ++friendIndex) {
-            if (friendIndex === peonIndex) {
-                continue; // Ignore ourselves.
-            }
-            var friend = peons[friendIndex];
-            var friendDistance = peon.distance(friend);
-            var friendWeight = -1.0/friendDistance;
-            if (friend.pos.x > peon.pos.x) {
-                friendsWeight[0] += friendWeight;
-            }
-            if (friend.pos.y > peon.pos.y) {
-                friendsWeight[1] += friendWeight;
-            }
-            if (friend.pos.x <= peon.pos.x) {
-                friendsWeight[2] += friendWeight;
-            }
-            if (friend.pos.y <= peon.pos.y) {
-                friendsWeight[3] += friendWeight;
-            }
-        }
-        
+    for (peonIndex = 0; peonIndex < this.peons.length; ++peonIndex) {
+        var peon = this.peons[peonIndex];
+        peonGridIndex = peonIndexCache[peonIndex];
+        log("PG:" + peonGridIndex);
         var bestScore = -1;
-        var bestScore2 = 0;
+        var bestCellIndex;
+        // Ensure "don't move" is first because we use > in score comparison.
+        // It will remain the best case with spare/equal cells.
+        var testCells = [peonGridIndex, // Don't move.
+                         peonGridIndex + GRID_COLS, // N
+                         peonGridIndex + GRID_COLS + 1, // NE
+                         peonGridIndex + GRID_COLS - 1, // NW
+                         peonGridIndex + 1, // E
+                         peonGridIndex - 1, // W
+                         peonGridIndex - GRID_COLS, // S
+                         peonGridIndex - GRID_COLS + 1, // SE
+                         peonGridIndex - GRID_COLS - 1 // SW
+                        ];
         
-
-            
-            var vecToPossible = Vector.subtract(possibleItem.pos, peon.pos);
-            var distance = vecToPossible.magnitude();
-
-            // Add weights. 
-            var score = possibleItem.bountyGold / (distance*DISTANCE_WEIGHT);
-            if (possibleItem.pos.x > peon.pos.x) {
-                score += friendsWeight[0];
-            }
-            if (possibleItem.pos.y > peon.pos.y) {
-                score += friendsWeight[1];
-            }
-            if (possibleItem.pos.x <= peon.pos.x) {
-                score += friendsWeight[2];
-            }
-            if (possibleItem.pos.y <= peon.pos.y) {
-                score += friendsWeight[3];
-            }
-            
-            if (score > bestScore) {
-                // Assume E will get it before we do, if closer.
-                if (peon.distanceSquared(possibleItem) <= peasant.distanceSquared(possibleItem)) {
-                    item = possibleItem;
-                    bestScore = score;
+        // Look in each nearest cell, if it exists.    
+        for (var testIndex in testCells) {
+            var testCellIndex = testCells[testIndex];
+            if (testCellIndex > 0 && testCellIndex <= GRID_MAX) {
+                log(testCellIndex + "=" + this.grid[testCellIndex][1]);
+                if (this.grid[testCellIndex][1] > bestScore) {
+                    var peonCheck = peonIndexCache.indexOf(testCellIndex);
+                    // Not found OR Self
+                    if (peonCheck === -1 || peonCheck === peonIndex) {
+                        bestScore = this.grid[testCellIndex][1];
+                        bestCellIndex = testCellIndex;
+                    }
                 }
             }
         }
-        if (item) {
-            pos = item.pos;
-            debug ? log(peon.id[0] + "=W") : null;
+        
+        var pos;
+        if (bestScore > 0) {
+            log("B:"+bestCellIndex);
+            var bestCell = this.grid[bestCellIndex];
+            var cellItems = bestCell[2];
+            var xcm = 0;
+            var ycm = 0;
+            for(var cellItemIndex = 0; cellItemIndex < cellItems.length; ++cellItemIndex) {
+                var itemInCell = cellItems[cellItemIndex];
+                xcm += itemInCell.bountyGold*itemInCell.pos.x;
+                ycm += itemInCell.bountyGold*itemInCell.pos.y;
+            }
+            xcm /= bestCell[1];
+            ycm /= bestCell[1];
+ 
+            pos = new Vector(xcm, ycm);
+            
+            bestCell[1] *= FRIENDLY_FACTOR; // For the next peon to avoid.
+            
+            log("P1:" + pos);
         } else {
-            // No item passed the bestScore criteria.
-            item = peon.getNearest(items); // Without regard to value.  
-            pos = item.pos;
-            debug ?  log(peon.id[0] + "=N") : null;
+            // Fallback, assume there's at least one item.
+            var nearestItem = peon.getNearest(base.getItems());
+            pos = nearestItem.pos;
+            log("P2:" + pos);
         }
-    }
-    
-    if (pos) {
-        var step = Vector.subtract(pos, peon.pos);
+        
+        //var step = Vector.subtract(pos, peon.pos);
         
         // Protect my targetPos from multi turn spying.
         // Also, take the smallest step possible (grab distance is 4.8ish)
-        step = Vector.limit(step, MAX_DISTANCE_PER_FRAME);
+        //step = Vector.limit(step, MAX_DISTANCE_PER_FRAME);
         
-        pos = Vector.add(peon.pos, step);
+        //pos = Vector.add(peon.pos, step);
         base.command(peon, 'move', pos);
+        
     }
 }
-*/
 
 // Build
 var expectedPeons = this.peons.length + this.queuedCount[Pid];
