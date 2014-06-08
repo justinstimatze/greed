@@ -18,7 +18,7 @@ var MAX_P = 5;
 // Trial and error.
 var ANGLE_FACTOR = 1.1 / Math.PI;
 var DISTANCE_FACTOR = 1.0;
-var VALUE_FACTOR = 1.0 / 5.0;
+var VALUE_FACTOR = 0.2;
 var TEST_DISTANCE_FACTOR = 1.0;
 var FRIEND_FACTOR1 = 0.0;
 var FRIEND_FACTOR2 = 0.0;
@@ -194,7 +194,7 @@ if (this.frames % 2 === 0) {
                 var testCellScore = testCellValue / testCellDistance;
                 
                 if (testIndex > 0 && this.grid[testCellIndex][3] > 0) {
-                    testCellScore *= FRIEND_FACTOR;
+                    testCellScore *= FRIEND_FACTOR1;
                 }
                 if (testCellScore > bestScore) {
                     bestScore = this.grid[testCellIndex][1];
@@ -202,33 +202,32 @@ if (this.frames % 2 === 0) {
                 }
             }
         }
-        
+
         var pos;
         if (bestScore > 0) {
             var bestCell = this.grid[bestCellIndex];
-            
-            if (bestCellIndex === peonGridIndex) {
-                var cellItems = bestCell[2];
-                var xcm = 0;
-                var ycm = 0;
-                for(var cellItemIndex = 0; cellItemIndex < cellItems.length; ++cellItemIndex) {
-                    var itemInCell = cellItems[cellItemIndex];
-                    xcm += itemInCell.bountyGold*itemInCell.pos.x;
-                    ycm += itemInCell.bountyGold*itemInCell.pos.y;
-                }
-                xcm /= bestCell[1];
-                ycm /= bestCell[1];
-     
-                pos = new Vector(xcm, ycm);
-            } else {
-                pos = new Vector(bestCell[0][0], bestCell[0][1]);
+
+            var cellItems = bestCell[2];
+            var xcm = 0;
+            var ycm = 0;
+            for(var cellItemIndex = 0; cellItemIndex < cellItems.length; ++cellItemIndex) {
+                var itemInCell = cellItems[cellItemIndex];
+                xcm += itemInCell.bountyGold*itemInCell.pos.x;
+                ycm += itemInCell.bountyGold*itemInCell.pos.y;
             }
-            
+            xcm /= bestCell[1];
+            ycm /= bestCell[1];
+ 
+            pos = new Vector(xcm, ycm);
+
             var roughStep = Vector.subtract(pos, peon.pos);
+    
+            bestScore = -1; // Invalid
+            var bestItem; 
             
-            var score = -1; // Invalid
-            var bestItem = peon.getNearest(base.getItems()); // Fallback
-            var itemsEnroute = this.grid[peonGridIndex][2].concat(bestCell[2]);
+            var tileStepPos = Vector.add(peon.pos, Vector.limit(roughStep, TILE));
+            var tileStepIndex = getCell(tileStepPos.x, tileStepPos.y)[0];
+            var itemsEnroute = (this.grid[peonGridIndex][2]).concat(this.grid[tileStepIndex][2]);
             for (var enrouteIndex = 0; enrouteIndex < itemsEnroute.length; ++enrouteIndex) {
                 var enrouteItem = itemsEnroute[enrouteIndex];
                 var enrouteStep = Vector.subtract(enrouteItem.pos, peon.pos);
@@ -236,8 +235,8 @@ if (this.frames % 2 === 0) {
                 enrouteProduct /= (roughStep.magnitude()*enrouteStep.magnitude());
                 if (enrouteProduct > 1) { enrouteProduct = 1; } 
                 else if (enrouteProduct < -1) { enrouteProduct = -1; }
-                var enrouteAngle = ANGLE_FACTOR*Math.acos(enrouteProduct); // Scales 0 to 1
-                var enrouteDistance = DISTANCE_FACTOR*enrouteStep.magnitude()/roughStep.magnitude(); // Scales 0 to ~1
+                var enrouteAngle = ANGLE_FACTOR*Math.acos(enrouteProduct);
+                var enrouteDistance = DISTANCE_FACTOR*enrouteStep.magnitude()/roughStep.magnitude();
                 var enrouteValue = VALUE_FACTOR*enrouteItem.bountyGold;
                 var enrouteScore = enrouteValue/(enrouteAngle*enrouteDistance);
                 if (enrouteScore > bestScore) {
@@ -245,15 +244,15 @@ if (this.frames % 2 === 0) {
                     bestItem = enrouteItem;
                 }
             }
-            
-            pos = bestItem.pos;
+            if (bestScore > 0) {
+                pos = bestItem.pos;
+            }
 
-            bestCell[1] *= FRIENDLY_FACTOR1; // For the next peon to avoid.
-            this.grid[peonGridIndex][1] *= FRIENDLY_FACTOR2;
+            // For the next peon to avoid.
+            bestCell[1] *= FRIENDLY_FACTOR1; 
+            this.grid[peonGridIndex][1] *= FRIENDLY_FACTOR2;                
         } else {
-            // Fallback, assume there's at least one item.
-            var nearestItem = peon.getNearest(base.getItems());
-            pos = nearestItem.pos;
+            pos = new Vector(42.5, 35); // Map Center.
         }
         
         // Protect my targetPos from multi turn spying.
