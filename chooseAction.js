@@ -16,9 +16,12 @@ var MAX_DISTANCE_PER_FRAME = 2 * SPEED / FRAMES_PER_SECOND;
 var MAX_P = 5;
 
 // Trial and error.
-var ANGLE_FACTOR = 1.1;
+var ANGLE_FACTOR = 1.1 / Math.PI;
 var DISTANCE_FACTOR = 1.0;
-var FRIEND_FACTOR = 0.0;
+var VALUE_FACTOR = 1.0 / 5.0;
+var TEST_DISTANCE_FACTOR = 1.0;
+var FRIEND_FACTOR1 = 0.0;
+var FRIEND_FACTOR2 = 0.0;
 var ENEMY_FACTOR = 0.0;
 
 // Shorthand variables
@@ -183,7 +186,7 @@ if (this.frames % 2 === 0) {
                 var colDiffSq = (peonGridCol - testCellCol);
                 colDiffSq *= colDiffSq;
                 
-                var testCellDistance = Math.sqrt(rowDiffSq + colDiffSq);
+                var testCellDistance = TEST_DISTANCE_FACTOR*Math.sqrt(rowDiffSq + colDiffSq);
                 
                 var testCellIndex = testCellRow*GRID_COLS + testCellCol;
                 var testCellValue = this.grid[testCellIndex][1];
@@ -233,9 +236,9 @@ if (this.frames % 2 === 0) {
                 enrouteProduct /= (roughStep.magnitude()*enrouteStep.magnitude());
                 if (enrouteProduct > 1) { enrouteProduct = 1; } 
                 else if (enrouteProduct < -1) { enrouteProduct = -1; }
-                var enrouteAngle = ANGLE_FACTOR*Math.acos(enrouteProduct) / Math.PI; // Scales 0 to 1
+                var enrouteAngle = ANGLE_FACTOR*Math.acos(enrouteProduct); // Scales 0 to 1
                 var enrouteDistance = DISTANCE_FACTOR*enrouteStep.magnitude()/roughStep.magnitude(); // Scales 0 to ~1
-                var enrouteValue = enrouteItem.bountyGold / 5.0;
+                var enrouteValue = VALUE_FACTOR*enrouteItem.bountyGold;
                 var enrouteScore = enrouteValue/(enrouteAngle*enrouteDistance);
                 if (enrouteScore > bestScore) {
                     bestScore = enrouteScore;
@@ -245,7 +248,8 @@ if (this.frames % 2 === 0) {
             
             pos = bestItem.pos;
 
-            bestCell[1] *= FRIENDLY_FACTOR; // For the next peon to avoid.
+            bestCell[1] *= FRIENDLY_FACTOR1; // For the next peon to avoid.
+            this.grid[peonGridIndex][1] *= FRIENDLY_FACTOR2;
         } else {
             // Fallback, assume there's at least one item.
             var nearestItem = peon.getNearest(base.getItems());
