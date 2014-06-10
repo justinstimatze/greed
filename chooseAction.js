@@ -13,12 +13,10 @@ function logVec(vec, name) {
 var FRAMES_PER_SECOND = 4.0; // As provided.
 var SPEED = 10.0; // As provided.
 var MAX_DISTANCE_PER_FRAME = SPEED / FRAMES_PER_SECOND;
-var MAX_HEALTH = 300;
 
 // Shorthand variables
-//          [ gatherer,  light,     medium,   wizard,      sniper,          heavy,     enemy]
 var TYPES = ['peasant', 'soldier', 'knight', 'librarian', 'griffin-rider', 'captain', 'peon'];
-//var TYPES = ['peon', 'munchkin', 'ogre', 'shaman', 'fangrider', 'brawler', 'peasant'];
+//          [ gatherer,  light,     medium,   wizard,      sniper,          heavy,     enemy]
 var Gid = 0;
 var G = TYPES[Gid];
 var Lid = 1;
@@ -34,16 +32,12 @@ var H = TYPES[Hid];
 var Eid = 6;
 var E = TYPES[Eid];
 
-var NUM_BINS = 4;
-var TWO_PI = 2*Math.PI;
-var BIN_SIZE = TWO_PI/NUM_BINS;
+var NBINS = 4;
+var BINSIZE = 2*Math.PI/NBINS;
 
-var OFFSET = 4;
-var LEADS = [[OFFSET, OFFSET],
-             [-OFFSET, OFFSET],
-             [-OFFSET, -OFFSET],
-             [OFFSET, -OFFSET]];
-             
+
+var LEAD = 5.0;
+
 // Persistent values.
 if (this.now() < 0.25) {
     if (typeof this.frames === 'undefined') {
@@ -76,52 +70,41 @@ enemies.reverse();
 
 items = this.getItems();
 
+var valueTemplate 
+
+// TODO: Set up value bins.
 var values = [];
 for (var enemyIndex = 0; enemyIndex < enemies.length; ++enemyIndex) {
     var enemyVector = new Vector(enemies[enemyIndex].pos.x, enemies[enemyIndex].pos.y);
-    values.push([[0, 0],
-                 [1, 0],
-                 [2, 0],
-                 [3, 0]]);
-
-    for (var itemIndex = 0; itemIndex < items.length; ++itemIndex) {
-        var item = items[itemIndex];
-        var itemVector = new Vector(item.pos.x, item.pos.y);
+    for (var itemIndex = 0; itemIndex < items.length; ++itemIndex {
+        var itemVector = new Vector(items[itemIndex].pos.x, items[itemIndex].pos.y);
         var vecToItem = Vector.subtract(itemVector, enemyVector);
-        var heading = vecToItem.heading();
-        if (heading < 0) {
-            heading += TWO_PI;
-        }
-        var bin = (heading / BIN_SIZE) | 0;
-        var score = item.bountyGold / vecToItem.magnitude();
-        values[enemyIndex][bin][1] += score;
+        var bin = Math.floor(vecToItem.heading()/BINSIZE);
     }
-}
-
-// Result: smallest to largest, since we pop off the end.
-function byScore(a, b) {
-    return (a[1] - b[1]);
-}
-for (enemyIndex = 0; enemyIndex < enemies.length; ++enemyIndex) {
-    values[enemyIndex].sort(byScore);
 }
 
 for (var gathererIndex = 0; gathererIndex < gatherers.length; ++gathererIndex) {
     var gatherer = gatherers[gathererIndex];
   
-    enemyIndex = gathererIndex % enemies.length;
+    var enemyIndex = gathererIndex % enemies.length;
     if (enemyIndex < enemies.length) { // Avoid first frame problem.
         var enemy = enemies[enemyIndex];
         
         // targetPos is too jittery to use directly.
+        //var pos = enemy.targetPos;
         var pos = new Vector(enemy.pos.x, enemy.pos.y);
-        var bestHeading = values[enemyIndex].pop()[0];
-        pos.x += LEADS[bestHeading][0];
-        pos.y += LEADS[bestHeading][1];
+        pos.x += LEAD;
            
+        // Protect my targetPos from multi turn spying.
+        // Also, take the smallest step possible (grab distance is 4.8ish)
+        // var step = Vector.subtract(pos, gatherer.pos);
+        // step = Vector.limit(step, MAX_DISTANCE_PER_FRAME);
+        // pos = Vector.add(gatherer.pos, step);
+        
         this.command(gatherer, 'move', pos);
     }
 }
+
 
 // Build
 var expectedGatherers = gatherers.length + this.queuedCount[Gid];
@@ -129,7 +112,7 @@ var expectedGatherers = gatherers.length + this.queuedCount[Gid];
 //debug ? log("EG: " + expectedGatherers) : null;
 
 // Mixed force burst
-if (this.health < MAX_HEALTH || this.now() > 120) {
+if (this.health < 300 || this.now() > 120) {
     if (this.gold >= 30) {
         this.buildQueue.unshift(L);
         ++this.queuedCount[Lid];
