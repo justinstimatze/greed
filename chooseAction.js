@@ -32,10 +32,6 @@ var H = TYPES[Hid];
 var Eid = 6;
 var E = TYPES[Eid];
 
-var NBINS = 4;
-var BINSIZE = 2*Math.PI/NBINS;
-
-
 var LEAD = 5.0;
 
 // Persistent values.
@@ -67,21 +63,6 @@ gatherers = this.getByType(G);
 gatherers.reverse();
 enemies = this.getByType(E);
 enemies.reverse();
-
-items = this.getItems();
-
-var valueTemplate 
-
-// TODO: Set up value bins.
-var values = [];
-for (var enemyIndex = 0; enemyIndex < enemies.length; ++enemyIndex) {
-    var enemyVector = new Vector(enemies[enemyIndex].pos.x, enemies[enemyIndex].pos.y);
-    for (var itemIndex = 0; itemIndex < items.length; ++itemIndex {
-        var itemVector = new Vector(items[itemIndex].pos.x, items[itemIndex].pos.y);
-        var vecToItem = Vector.subtract(itemVector, enemyVector);
-        var bin = Math.floor(vecToItem.heading()/BINSIZE);
-    }
-}
 
 for (var gathererIndex = 0; gathererIndex < gatherers.length; ++gathererIndex) {
     var gatherer = gatherers[gathererIndex];
