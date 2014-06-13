@@ -16,8 +16,8 @@ It seemed important to make the simplest reasonable local pathfinding decision g
 ## Weighted item decisions
 
 I attempted to rank nearby coins by their value and inverse square distance, choosing the highest ranking coin for my next destination.
-This included checking to see if we were closer to the closest enemy gatherer's closest coin, which mean we should steal it from them (regardless of value) so they waste time in repathing.
-This code got unweildy fairly quickly and wasn't performing well, so I began thinking of other approaches.
+This included checking to see if we were closer to the closest enemy gatherer's closest coin, which mean we should steal it from them (regardless of value) so they waste time in re-navigating.
+This code got unwieldy fairly quickly and wasn't performing well, so I began thinking of other approaches.
 
 ## Cell based decisions ([cells.js](https://github.com/justinstimatze/greed/blob/master/cells.js), Ogre)
 
