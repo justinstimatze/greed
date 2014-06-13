@@ -19,7 +19,9 @@ I attempted to rank nearby coins by their value and inverse square distance, cho
 This included checking to see if we were closer to the closest enemy gatherer's closest coin, which meant we should steal it from them (regardless of value) so they waste time in re-navigating.
 This code got unwieldy quickly and wasn't performing well, so I began thinking of other approaches.
 
-## Cell based decisions ([cells.js](https://github.com/justinstimatze/greed/blob/master/cells.js), Ogre)
+## Cell based decisions 
+
+([cells.js](https://github.com/justinstimatze/greed/blob/master/cells.js), Ogre)
 
 This approach populated a 2D array of cells (5x6, 14 units square) with information about each coin within a given cell.
 Doing so took enough of the 4000 allowed statements that I had to alternate this process with actually acting on the information every other frame. 
@@ -33,7 +35,9 @@ If the destination cell is far away, we choose an actual coin (from the coins wi
 
 The unit production strategy was simply to release small bursts of three light attackers when possible.
 
-## Stalking every enemy, staying next to them. ([stalk.js](https://github.com/justinstimatze/greed/blob/master/stalk.js), Human)
+## Stalking every enemy, staying next to them.
+
+([stalk.js](https://github.com/justinstimatze/greed/blob/master/stalk.js), Human)
 
 I had noticed that enemy gatherers' current destinations were also available to me.
 To defend against this, I made sure to never move more than the minimum possible per frame so that my long distance destinations would not be revealed.
@@ -43,7 +47,9 @@ Many strong solutions tend to avoid enemy gatherers in the early game, so this l
 However, simply forcing each gatherer to remain about five units to the right (arbitrarily) of each enemy gatherer produced the highest number of coins.
 In fact, this was my strongest solution yet!
 
-## Gravitational Search Algorithm ([best_gravity.js](https://github.com/justinstimatze/greed/blob/master/best_gravity.js), Human)
+## Gravitational Search Algorithm
+
+([best_gravity.js](https://github.com/justinstimatze/greed/blob/master/best_gravity.js), Human)
 
 After the good humored frustration of having my carefully planned cell-based system undermined by the "five to the right" method, I explored some of the research literature on swarm algorithms and cooperative resource collection.
 I felt that the [gravitational search algorithm](http://en.wikipedia.org/wiki/Swarm_intelligence#Gravitational_search_algorithm) seemed like the most promising and implemented it on the final day of the tournament.
