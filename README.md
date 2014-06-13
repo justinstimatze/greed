@@ -54,7 +54,8 @@ In fact, this was my strongest solution yet!
 
 After the good humored frustration of having my carefully planned cell-based system undermined by the "five to the right" method, I explored some of the research literature on swarm algorithms and cooperative resource collection.
 I felt that the [gravitational search algorithm](http://en.wikipedia.org/wiki/Swarm_intelligence#Gravitational_search_algorithm) seemed like the most promising and implemented it on the final day of the tournament.
-I considered electronic charges to be a better model, since negative/repulsive mass was a useful refinement, and I allowed the charges to change linearly with the number of friendly and enemy gatherers, causing a shift in behavior over the simulation from avoiding enemys to stalking them.
+I considered electronic charges to be a better model, since negative/repulsive mass was a useful refinement.
+I also allowed the charges to change linearly with the number of friendly and enemy gatherers, causing a shift in behavior over the simulation from avoiding enemys to stalking them.
 I then used the top enemy player to tune the parameters but found them to be brittle and difficult to generalize to other players.
 
 The unit production strategy was refined to always retain a buffer of gold sufficient to build a gatherer if we had fallen behind, but to otherwise hoard gold until we were being attacked or time was about to run out. 
