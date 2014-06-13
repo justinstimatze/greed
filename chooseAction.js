@@ -51,7 +51,7 @@ if (this.now() < 0.25) {
     
 }
 
-//debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
+debug ? log("D: " + ((this.now() * FRAMES_PER_SECOND) - this.frames)) : null;
 
 // Command
 // Steal/starve strategy may depend on turn evaluation:
@@ -76,12 +76,6 @@ for (var gathererIndex = 0; gathererIndex < gatherers.length; ++gathererIndex) {
         var pos = new Vector(enemy.pos.x, enemy.pos.y);
         pos.x += LEAD;
            
-        // Protect my targetPos from multi turn spying.
-        // Also, take the smallest step possible (grab distance is 4.8ish)
-        // var step = Vector.subtract(pos, gatherer.pos);
-        // step = Vector.limit(step, MAX_DISTANCE_PER_FRAME);
-        // pos = Vector.add(gatherer.pos, step);
-        
         this.command(gatherer, 'move', pos);
     }
 }
@@ -89,8 +83,8 @@ for (var gathererIndex = 0; gathererIndex < gatherers.length; ++gathererIndex) {
 
 // Build
 var expectedGatherers = gatherers.length + this.queuedCount[Gid];
-//debug ? log('E: ' + enemies.length) : null;
-//debug ? log("EG: " + expectedGatherers) : null;
+debug ? log('E: ' + enemies.length) : null;
+debug ? log("EG: " + expectedGatherers) : null;
 
 // Mixed force burst
 if (this.health < 300 || this.now() > 120) {
@@ -119,8 +113,8 @@ if (this.buildQueue.length !== 0) {
         this.build(nextType);
     }
 }
-//debug ? log("G: " + gatherers.length) : null;
-//debug ? log("Q: " + this.buildQueue) : null;
+debug ? log("G: " + gatherers.length) : null;
+debug ? log("Q: " + this.buildQueue) : null;
 
 this.say(logger);
 ++this.frames;
