@@ -26,7 +26,7 @@ This code got unwieldy quickly and wasn't performing well, so I began thinking o
 This approach populated a 2D array of cells (5x6, 14 units square) with information about each coin within a given cell.
 Doing so took enough of the 4000 allowed statements that I had to alternate this process with actually acting on the information every other frame. 
 I would be working with slightly old information when moving gatherers but I hoped the cells would enable me to to make better "long range" decisions without considering the individual items when evaluating those options.
-I wasn't sure how much various operations would count against the statement limit, so binning the coins into cells uses a maximum of three comparison operations per coin.
+I wasn't sure how much various operations would count against the statement limit, so binning the coins into cells uses a maximum of six comparison operations per coin.
 
 After the cells are populated, each gatherer selects the best (again, value and inverse square distance) cell and decides to move there. Before doing so, it lowers the value of both its current cell and destination cell (and cells containing enemy gatherers) so that all gatherers avoid both each other and do not compete for the same destination.
 Since a cell is fairly large compared to a coin, the actual destination is the "gold center of mass" of the cell.
@@ -44,6 +44,7 @@ To defend against this, I made sure to never move more than the minimum possible
 I attempted to use the destinations to always be "one step ahead" in denying enemy gatherers their coins, but there is enough of a delay in the destination that they will be about one frame ahead of you still (or so it seemed).
 I then attempted to place my gatherer near each enemy gatherer but on the side where I felt they would be more likely (by angle) to move next.
 Many strong solutions tend to avoid enemy gatherers in the early game, so this lead to many matches where I would simply chase the enemies and they would run away from my gatherers while still collecting coins ahead of them.
+
 However, simply forcing each gatherer to remain about five units to the right (arbitrarily) of each enemy gatherer produced the highest number of coins.
 In fact, this was my strongest solution yet!
 
