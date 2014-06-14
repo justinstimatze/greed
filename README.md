@@ -14,7 +14,7 @@ Summary of methods in order of decreasing strength.
 
 I explored some of the research literature on swarm algorithms and cooperative resource collection.
 I felt that the [gravitational search algorithm](http://en.wikipedia.org/wiki/Swarm_intelligence#Gravitational_search_algorithm) seemed like the most promising and implemented it on the final day of the competition.
-I considered electronic charges to be a better model, since negative/repulsive mass was a useful refinement.
+I considered electric charges to be a better model, since negative/repulsive mass was a useful refinement.
 I also allowed the charges to change linearly with the number of friendly and enemy gatherers, causing a shift in behavior over the simulation from avoiding enemies to stalking them.
 I then used the top enemy player to tune the parameters but found them to be brittle and difficult to generalize to other players.
 
